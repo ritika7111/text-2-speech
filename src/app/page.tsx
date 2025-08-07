@@ -1,6 +1,4 @@
 "use client";
-
-import { maxHeaderSize } from "http";
 import { useState } from "react";
 
 export default function TTSPage() {
@@ -50,14 +48,13 @@ export default function TTSPage() {
         <h1 className="text-3xl font-extrabold text-gray-800 text-center">
           🎙Text-to-Speech
         </h1>
-
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           placeholder="✍️ Type or paste text here..."
           style={{
             width: "100%",
-            minHeight: "150px",
+            minHeight: "350px",
             fontSize: "16px",
             padding: "12px",
             resize: "vertical",
