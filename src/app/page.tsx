@@ -1,80 +1,111 @@
-"use client";
-import { useState } from "react";
+'use client';
 
-export default function TTSPage() {
+import { useState } from 'react';
+
+export default function TTSBootstrap() {
   const [text, setText] = useState("");
+  const [voice, setVoice] = useState('en-IN-ArjunNeural');
+  const [audioUrl, setAudioUrl] = useState('');
   const [loading, setLoading] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
 
-  const downloadTTS = async () => {
-    if (!text.trim()) {
-      alert("Please enter some text.");
-      return;
-    }
+  const handleSubmit = async () => {
+    if (!text.trim()) return alert('Please enter some text.');
 
     setLoading(true);
+    setAudioUrl('');
 
     try {
-      const response = await fetch("/api/tts", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ text }),
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, voice }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        alert(`TTS failed: ${errorData.error}`);
-        return;
-      }
+      if (!response.ok) throw new Error('Failed to generate audio.');
 
       const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "speech.mp3";
-      a.click();
-      window.URL.revokeObjectURL(url);
+      const url = URL.createObjectURL(blob);
+      setAudioUrl(url);
+
+      const audio = new Audio(url);
+      audio.play();
     } catch (err: any) {
-      alert(`Unexpected error: ${err.message}`);
+      alert(err.message || 'Error generating audio');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-white p-6 flex items-center justify-center">
-      <div className="w-full max-w-2xl bg-white rounded-3xl shadow-2xl p-10 space-y-8">
-        <h1 className="text-3xl font-extrabold text-gray-800 text-center">
-          🎙Text-to-Speech
-        </h1>
-        <textarea
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder="✍️ Type or paste text here..."
-          style={{
-            width: "100%",
-            minHeight: "350px",
-            fontSize: "16px",
-            padding: "12px",
-            resize: "vertical",
-            boxSizing: "border-box",
-          }}
-          className="w-full text-lg p-6 border border-gray-300 rounded-2xl shadow-inner resize-none focus:outline-none focus:ring-2 focus:ring-blue-400 placeholder-gray-400"
-        />
+    <div className={darkMode ? 'bg-dark text-light' : 'bg-light text-dark'}>
+      <div className="container py-5">
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h2>🎙 Text to Speech</h2>
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => setDarkMode(!darkMode)}
+          >
+            {darkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+          </button>
+        </div>
 
-        <button
-          onClick={downloadTTS}
-          disabled={loading}
-          className={`w-full py-4 text-lg font-semibold rounded-2xl transition ${
-            loading
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-blue-600 text-white hover:bg-blue-700"
-          }`}
-        >
-          {loading ? "🔄 Generating MP3..." : "⬇️ Download MP3"}
-        </button>
+        <div className="mb-3">
+          <label className="form-label">Choose Voice</label>
+          <select
+            className="form-select"
+            value={voice}
+            onChange={(e) => setVoice(e.target.value)}
+          >
+            <option value="en-IN-ArjunNeural">English - Arjun</option>
+            <option value="hi-IN-ArjunNeural">Hindi - Arjun</option>
+            <option value="hi-IN-SwaraNeural">Hindi - Swara</option>
+            <option value="en-IN-AartiNeural">English - Aarti</option>
+            <option value="hi-IN-AartiNeural">Hindi - Aarti</option>
+          </select>
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label">Enter Text</label>
+          <textarea
+            className="form-control"
+            rows={6}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Type your message here..."
+          ></textarea>
+        </div>
+
+        <div className="d-flex flex-wrap gap-3">
+          <button
+            className="btn btn-primary"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              <>
+                <span
+                  className="spinner-border spinner-border-sm me-2"
+                  role="status"
+                ></span>
+                Generating...
+              </>
+            ) : (
+              '▶️ Play Audio'
+            )}
+          </button>
+
+          {audioUrl && (
+            <a
+              href={audioUrl}
+              download={voice+".mp3"}
+              className="btn btn-success"
+            >
+              ⬇️ Download MP3
+            </a>
+          )}
+        </div>
       </div>
-    </main>
+    </div>
   );
 }
