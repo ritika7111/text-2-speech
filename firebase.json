@@ -1,11 +1,20 @@
 {
   "hosting": {
-    "public": "out",
-    "cleanUrls": true,
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "frameworksBackend": {
-      "region": "us-central1"
-    },
-    "rewrites": [{ "source": "**", "destination": "/index.html" }]
+    "site": "text-2-speech",
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "function": "nextServer"
+      }
+    ]
+  },
+  "functions": {
+    "source": "."
   }
 }
